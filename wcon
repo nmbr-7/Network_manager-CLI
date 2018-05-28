@@ -1,0 +1,40 @@
+#!/bin/bash
+#Written by nmbr_7
+
+line="\e[34m----------------------------------------------------------------------------\e[m"
+
+echo -e $line
+echo -ne "\e[31m			Available Connections\n\e[m"
+echo -e $line
+nmcli dev wifi
+if [ -z "$(nmcli dev wifi|awk 'FNR == 2 {print}')" ]; then
+	echo -e "\e[31mNo available connection\e[m"
+fi
+echo -en "$line\nWifi is \e[31m[$(wifi|awk '{print $3}')]\e[m\n"
+
+a=$(nmcli dev status|grep " connected ")
+if [ -n "$a" ]; then
+	echo -ne "Connection is \e[31m[online]\e[m \nSSID \e[31m[$(echo $a|awk '{print  $4}')]\e[m\n"
+elif [ -z "$a" ]; then
+	echo -ne "Connection is \e[31m[offline]\e[m\n"
+fi
+echo -e  "\e[34m--------------------------------------------------\e[m"
+echo -ne "|\e[36m[OPTIONS]\e[m                                       |"
+echo -ne "\n|\e[32m(*)Press 'd' to disconnect\e[m                      |"
+echo -ne "\n|\e[32m(*)Press 'c' to connect\e[m                         |"
+echo -e  "\n\e[34m--------------------------------------------------\e[m"
+read -s -N 1 opt
+
+if [[ "$opt" =~ "c" ]]; then
+	echo -ne "\e[35mSSID:\e[m"
+        read SSID
+        echo -ne "\e[35mPASS:\e[m"
+        read -s PASS
+        echo -e  "\n$line"
+        nmcli dev wifi con $SSID password $PASS
+        echo -e $line
+elif [[ "$opt" =~ "d" ]]; then
+        echo -e $line
+	nmcli dev disconnect $(nmcli dev|grep connected|awk '{print $1}')
+        echo -e $line
+fi
